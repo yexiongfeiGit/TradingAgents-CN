@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingAgents 智能体工作流流程图</title>
+    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .legend {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .legend h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        .legend-item {
+            display: inline-block;
+            margin: 5px 15px 5px 0;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        .agent-tech { background: #ffecb3; color: #e65100; }
+        .agent-fundamental { background: #c8e6c9; color: #2e7d32; }
+        .agent-risk { background: #ffcdd2; color: #c62828; }
+        .agent-trader { background: #d1c4e9; color: #6a1b9a; }
+        .workflow-step { background: #b2ebf2; color: #006064; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 TradingAgents 智能体工作流流程图</h1>
+        
+        <div class="legend">
+            <h3>📋 图例说明</h3>
+            <div class="legend-item agent-tech">技术分析智能体</div>
+            <div class="legend-item agent-fundamental">基本面分析智能体</div>
+            <div class="legend-item agent-risk">风险评估智能体</div>
+            <div class="legend-item agent-trader">交易决策智能体</div>
+            <div class="legend-item workflow-step">工作流步骤</div>
+        </div>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+                flowchart TD
+                    Start([🚀 开始分析]) --> Init[初始化工作流引擎]
+                    
+                    Init --> Step1["WorkflowStep: 数据收集"]
+                    Step1 --> Step2["WorkflowStep: 技术分析"]
+                    Step2 --> TechAgent["TechnicalAnalyst
+                    <br />🔍 技术指标分析"]
+                    
+                    TechAgent --> Step3["WorkflowStep: 基本面分析"]
+                    Step3 --> FundAgent["FundamentalAnalyst
+                    <br />📊 财务数据分析"]
+                    
+                    FundAgent --> Step4["WorkflowStep: 综合分析"]
+                    Step4 --> Synthesis["综合评估结果"]
+                    
+                    Synthesis --> Step5["WorkflowStep: 风险评估"]
+                    Step5 --> RiskAgent["RiskAnalyst
+                    <br />⚠️ 风险分析"]
+                    
+                    RiskAgent --> Decision{风险等级
+                    <br />是否可接受?}
+                    
+                    Decision -->|高风险| Step6["WorkflowStep: 重新分析"]
+                    Step6 --> ReAnalysis["调整分析参数"]
+                    ReAnalysis --> Step2
+                    
+                    Decision -->|可接受| Step7["WorkflowStep: 交易决策"]
+                    Step7 --> TraderAgent["TradingAgent
+                    <br />💰 交易执行决策"]
+                    
+                    TraderAgent --> Step8["WorkflowStep: 执行交易"]
+                    Step8 --> Execution["交易执行"]
+                    
+                    Execution --> Step9["WorkflowStep: 监控反馈"]
+                    Step9 --> Monitor["持续监控"]
+                    
+                    Monitor --> Success{交易结果}
+                    Success -->|成功| Complete([✅ 交易完成])
+                    Success -->|失败| ErrorHandler["错误处理"]
+                    ErrorHandler --> Step6
+                    
+                    Complete --> Log["记录交易日志"]
+                    Log --> End([🏁 流程结束])
+                    
+                    %% 样式定义
+                    classDef techAgent fill:#ffecb3,stroke:#e65100,stroke-width:2px,color:#e65100
+                    classDef fundamentalAgent fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#2e7d32
+                    classDef riskAgent fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#c62828
+                    classDef traderAgent fill:#d1c4e9,stroke:#6a1b9a,stroke-width:2px,color:#6a1b9a
+                    classDef workflowStep fill:#b2ebf2,stroke:#006064,stroke-width:2px,color:#006064
+                    classDef decisionNode fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+                    classDef startEnd fill:#e8f5e8,stroke:#4caf50,stroke-width:3px,color:#2e7d32
+                    
+                    class TechAgent techAgent
+                    class FundAgent fundamentalAgent
+                    class RiskAgent riskAgent
+                    class TraderAgent traderAgent
+                    class Step1,Step2,Step3,Step4,Step5,Step6,Step7,Step8,Step9 workflowStep
+                    class Decision,Success decisionNode
+                    class Start,Complete,End startEnd
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <h3>🔧 工作流引擎核心机制</h3>
+            <div class="mermaid">
+                sequenceDiagram
+                    participant Client as 客户端
+                    participant Engine as WorkflowEngine
+                    participant Step as WorkflowStep
+                    participant Agent as BaseAgent
+                    participant State as AgentState
+                    
+                    Client->>Engine: 创建工作流
+                    Engine->>Engine: 初始化上下文
+                    Engine->>Step: 添加步骤
+                    Step->>Step: 设置依赖条件
+                    
+                    Client->>Engine: 启动工作流
+                    Engine->>Engine: 检查步骤状态
+                    
+                    loop 每个步骤
+                        Engine->>Step: 检查执行条件
+                        alt 条件满足
+                            Step->>Agent: 调用智能体
+                            Agent->>State: 更新状态
+                            Agent-->>Step: 返回结果
+                            Step-->>Engine: 步骤完成
+                        else 条件不满足
+                            Step-->>Engine: 等待依赖
+                        end
+                    end
+                    
+                    Engine->>Engine: 更新工作流状态
+                    Engine-->>Client: 返回结果
+            </div>
+        </div>
+
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-top: 30px;">
+            <h3>🎯 设计特点</h3>
+            <ul>
+                <li><strong>状态驱动:</strong> 每个步骤都有明确的状态（PENDING → RUNNING → COMPLETED/FAILED）</li>
+                <li><strong>条件执行:</strong> 基于前置条件和依赖关系智能调度步骤执行</li>
+                <li><strong>上下文共享:</strong> 通过AgentState实现智能体间的信息共享</li>
+                <li><strong>错误处理:</strong> 完善的异常处理和重试机制</li>
+                <li><strong>可扩展性:</strong> 支持自定义步骤类型和智能体</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35
+            }
+        });
+    </script>
+</body>
+</html>

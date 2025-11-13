@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BullResearcher extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(BullResearcher.class);
-    
+
     public BullResearcher() {
         super("多头研究员", "bull_researcher");
         // 使用Claude模型进行深度分析
@@ -87,9 +86,9 @@ public class BullResearcher extends BaseAgent {
         }
         
         // 添加投资辩论历史
-        if (state.getInvestmentDebate() != null && !state.getInvestmentDebate().getDebateHistory().isEmpty()) {
+        if (state.getInvestmentDebateState() != null && !state.getInvestmentDebateState().getDebateHistory().isEmpty()) {
             prompt.append("\n投资辩论历史:\n");
-            for (String debate : state.getInvestmentDebate().getDebateHistory()) {
+            for (String debate : state.getInvestmentDebateState().getDebateHistory()) {
                 prompt.append("- ").append(debate).append("\n");
             }
         }
@@ -117,9 +116,9 @@ public class BullResearcher extends BaseAgent {
         String formattedResponse = llmService.formatResponse(response);
         
         // 更新投资辩论状态
-        if (state.getInvestmentDebate() != null) {
-            state.getInvestmentDebate().addBullArgument(formattedResponse);
-            state.getInvestmentDebate().incrementBullSpeeches();
+        if (state.getInvestmentDebateState() != null) {
+            state.getInvestmentDebateState().addBullArgument(formattedResponse);
+            state.getInvestmentDebateState().incrementBullSpeeches();
         }
         
         // 添加消息到历史记录

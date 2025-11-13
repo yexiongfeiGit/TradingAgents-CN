@@ -87,19 +87,19 @@ public class PortfolioManager extends BaseAgent {
         }
         
         // 添加投资辩论历史
-        if (state.getInvestmentDebate() != null && !state.getInvestmentDebate().getDebateHistory().isEmpty()) {
+        if (state.getInvestmentDebateState() != null && !state.getInvestmentDebateState().getDebateHistory().isEmpty()) {
             prompt.append("\n投资辩论历史:\n");
-            for (String debate : state.getInvestmentDebate().getDebateHistory()) {
+            for (String debate : state.getInvestmentDebateState().getDebateHistory()) {
                 prompt.append("- ").append(debate).append("\n");
             }
-            prompt.append("\n多头观点数量: ").append(state.getInvestmentDebate().getBullSpeeches()).append("\n");
-            prompt.append("空头观点数量: ").append(state.getInvestmentDebate().getBearSpeeches()).append("\n");
+            prompt.append("\n多头观点数量: ").append(state.getInvestmentDebateState().getBullSpeeches()).append("\n");
+            prompt.append("空头观点数量: ").append(state.getInvestmentDebateState().getBearSpeeches()).append("\n");
         }
         
         // 添加风险讨论
-        if (state.getRiskDiscussion() != null && !state.getRiskDiscussion().getRiskAnalyses().isEmpty()) {
+        if (state.getRiskDiscussionState() != null && !state.getRiskDiscussionState().getRiskAnalyses().isEmpty()) {
             prompt.append("\n风险分析:\n");
-            for (String risk : state.getRiskDiscussion().getRiskAnalyses()) {
+            for (String risk : state.getRiskDiscussionState().getRiskAnalyses()) {
                 prompt.append("- ").append(risk).append("\n");
             }
         }
@@ -129,8 +129,8 @@ public class PortfolioManager extends BaseAgent {
         // 格式化响应
         String formattedResponse = llmService.formatResponse(response);
         
-        // 更新最终决策
-        state.setFinalDecision(formattedResponse);
+        // 更新投资组合分析
+        state.setPortfolioAnalysis(formattedResponse);
         
         // 添加消息到历史记录
         updateState(state, formattedResponse);

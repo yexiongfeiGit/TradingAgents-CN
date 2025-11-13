@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 基础智能体类
@@ -112,8 +113,9 @@ public abstract class BaseAgent {
     protected AgentState updateState(AgentState state, String response) {
         // 添加消息到状态
         AgentState.Message message = AgentState.Message.builder()
-                .role("assistant")
+                .senderId(agentName)
                 .content(response)
+                .messageType("RESPONSE")
                 .build();
         state.addMessage(message);
         
@@ -127,7 +129,11 @@ public abstract class BaseAgent {
      * 获取当前工具调用次数
      */
     protected int getToolCallCount(AgentState state) {
-        return state.getToolCallCount(agentType);
+        Map<String, Integer> toolCallCounts = (Map<String, Integer>) state.getSharedContextValue("toolCallCounts");
+        if (toolCallCounts == null) {
+            return 0;
+        }
+        return toolCallCounts.getOrDefault(agentType, 0);
     }
     
     /**

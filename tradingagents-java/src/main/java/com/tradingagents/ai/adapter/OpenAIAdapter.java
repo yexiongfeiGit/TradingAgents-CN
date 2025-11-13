@@ -20,8 +20,7 @@ import java.util.Map;
 @Component
 public class OpenAIAdapter implements LLMAdapter {
     
-    private static final Logger log = LoggerFactory.getLogger(OpenAIAdapter.class);
-    
+
     private final OpenAiChatModel chatModel;
     
     @Value("${spring.ai.openai.chat.options.model:gpt-4}")

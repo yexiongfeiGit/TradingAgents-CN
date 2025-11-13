@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RiskManager extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(RiskManager.class);
-    
+
     public RiskManager() {
         super("风险管理师", "risk_manager");
         // 使用GPT-4o进行专业风险分析
@@ -88,9 +87,9 @@ public class RiskManager extends BaseAgent {
         }
         
         // 添加投资辩论历史
-        if (state.getInvestmentDebate() != null && !state.getInvestmentDebate().getDebateHistory().isEmpty()) {
+        if (state.getInvestmentDebateState() != null && !state.getInvestmentDebateState().getDebateHistory().isEmpty()) {
             prompt.append("\n投资辩论历史:\n");
-            for (String debate : state.getInvestmentDebate().getDebateHistory()) {
+            for (String debate : state.getInvestmentDebateState().getDebateHistory()) {
                 prompt.append("- ").append(debate).append("\n");
             }
         }
@@ -121,9 +120,9 @@ public class RiskManager extends BaseAgent {
         String formattedResponse = llmService.formatResponse(response);
         
         // 更新风险讨论状态
-        if (state.getRiskDiscussion() != null) {
-            state.getRiskDiscussion().addRiskAnalysis(formattedResponse);
-            state.getRiskDiscussion().incrementRiskSpeeches();
+        if (state.getRiskDiscussionState() != null) {
+            state.getRiskDiscussionState().addRiskAnalysis(formattedResponse);
+            state.getRiskDiscussionState().incrementRiskSpeeches();
         }
         
         // 添加消息到历史记录
