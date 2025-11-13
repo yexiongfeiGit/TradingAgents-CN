@@ -1,0 +1,148 @@
+spring:
+  application:
+    name: tradingagents-java
+  
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4}
+          temperature: 0.7
+          max-tokens: 4000
+    
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      chat:
+        options:
+          model: ${ANTHROPIC_MODEL:claude-3-sonnet-20240229}
+          temperature: 0.7
+          max-tokens: 4000
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/tradingagents}
+    
+    redis:
+      repositories:
+        enabled: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.tradingagents: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/tradingagents.log
+    max-size: 10MB
+    max-history: 30
+
+tradingagents:
+  # 分析配置
+  analysis:
+    max-debate-rounds: 2
+    max-risk-discuss-rounds: 3
+    max-tool-calls: 3
+    research-depths:
+      1: "快速分析"
+      2: "标准分析"
+      3: "深度分析"
+      4: "全面分析"
+      5: "专家分析"
+  
+  # 智能体配置
+  agents:
+    market-analyst:
+      max-tool-calls: 3
+      enabled: true
+    
+    sentiment-analyst:
+      max-tool-calls: 3
+      enabled: true
+    
+    news-analyst:
+      max-tool-calls: 3
+      enabled: true
+    
+    fundamentals-analyst:
+      max-tool-calls: 1
+      enabled: true
+    
+    bull-researcher:
+      enabled: true
+    
+    bear-researcher:
+      enabled: true
+    
+    research-manager:
+      enabled: true
+    
+    risk-analysts:
+      aggressive:
+        enabled: true
+      conservative:
+        enabled: true
+      neutral:
+        enabled: true
+    
+    portfolio-manager:
+      enabled: true
+
+  # 股票数据配置
+  stock-data:
+    providers:
+      tushare:
+        api-key: ${TUSHARE_API_KEY:}
+        enabled: true
+      
+      akshare:
+        enabled: true
+      
+      yahoo-finance:
+        enabled: true
+        base-url: https://query1.finance.yahoo.com
+    
+    cache:
+      enabled: true
+      ttl:
+        us-stock: 3600  # 1小时
+        china-stock: 1800  # 30分钟
+        hk-stock: 2700  # 45分钟
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
