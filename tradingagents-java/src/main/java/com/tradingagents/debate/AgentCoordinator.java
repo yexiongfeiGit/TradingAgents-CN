@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class AgentCoordinator {
     
-    private static final Logger log = LoggerFactory.getLogger(AgentCoordinator.class);
-    
+
     private Map<String, MultiRoundDialogue> agentDialogues;
     private InvestmentDebate investmentDebate;
     private RiskDiscussion riskDiscussion;

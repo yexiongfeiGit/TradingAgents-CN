@@ -16,8 +16,7 @@ import java.util.List;
 @Slf4j
 public class MultiRoundDialogue {
     
-    private static final Logger log = LoggerFactory.getLogger(MultiRoundDialogue.class);
-    
+
     private List<String> dialogueHistory;
     private List<String> keyInsights;
     private List<String> actionItems;

@@ -13,8 +13,7 @@ import org.slf4j.LoggerFactory;
 @Slf4j
 public class WorkflowCondition {
     
-    private static final Logger log = LoggerFactory.getLogger(WorkflowCondition.class);
-    
+
     private String conditionType;
     private String parameter;
     private String operator;

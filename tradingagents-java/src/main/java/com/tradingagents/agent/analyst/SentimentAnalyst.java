@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SentimentAnalyst extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(SentimentAnalyst.class);
-    
+
     public SentimentAnalyst() {
         super("情绪分析师", "sentiment_analyst");
     }

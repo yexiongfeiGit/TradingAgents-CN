@@ -3,6 +3,7 @@ package com.tradingagents.api;
 import com.tradingagents.debate.InvestmentDebate;
 import com.tradingagents.debate.MultiRoundDialogue;
 import com.tradingagents.workflow.InvestmentAnalysisWorkflow;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,11 @@ import java.util.Map;
  * 投资分析控制器
  * 提供投资分析相关的API接口
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/investment-analysis")
 public class InvestmentAnalysisController {
 
-    private static final Logger log = LoggerFactory.getLogger(InvestmentAnalysisController.class);
 
     @Autowired
     private InvestmentAnalysisWorkflow investmentAnalysisWorkflow;

@@ -16,8 +16,7 @@ import java.util.List;
 @Slf4j
 public class RiskDiscussion {
     
-    private static final Logger log = LoggerFactory.getLogger(RiskDiscussion.class);
-    
+
     private List<String> discussionHistory;
     private List<String> riskConcerns;
     private List<String> riskMitigations;

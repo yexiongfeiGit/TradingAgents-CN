@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FundamentalsAnalyst extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(FundamentalsAnalyst.class);
-    
+
     public FundamentalsAnalyst() {
         super("基本面分析师", "fundamentals_analyst");
         // 基本面分析需要更强的模型

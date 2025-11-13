@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MarketAnalyst extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(MarketAnalyst.class);
-    
+
     public MarketAnalyst() {
         super("市场分析师", "market_analyst");
     }

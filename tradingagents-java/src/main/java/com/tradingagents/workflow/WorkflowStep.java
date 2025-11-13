@@ -18,8 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class WorkflowStep {
     
-    private static final Logger log = LoggerFactory.getLogger(WorkflowStep.class);
-    
+
     private String stepId;
     private String stepName;
     private String stepType; // ANALYSIS, DEBATE, RISK_ASSESSMENT, DECISION, COORDINATION

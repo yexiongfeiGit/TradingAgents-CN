@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NewsAnalyst extends BaseAgent {
     
-    private static final Logger log = LoggerFactory.getLogger(NewsAnalyst.class);
-    
+
     public NewsAnalyst() {
         super("新闻分析师", "news_analyst");
     }

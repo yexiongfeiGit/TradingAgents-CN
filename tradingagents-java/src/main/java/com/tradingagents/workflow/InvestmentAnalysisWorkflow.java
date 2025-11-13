@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
 @Slf4j
 public class InvestmentAnalysisWorkflow {
     
-    private static final Logger log = LoggerFactory.getLogger(InvestmentAnalysisWorkflow.class);
-    
+
     private WorkflowEngine workflowEngine;
     private AgentCoordinator agentCoordinator;
     private String stockSymbol;
