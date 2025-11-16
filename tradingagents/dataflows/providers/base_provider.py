@@ -1,5 +1,107 @@
+#!/usr/bin/env python3
 """
-统一股票数据提供器基类
+统一股票数据提供器基类模块
+
+定义了所有股票数据提供器的统一接口和基础功能，为不同数据源提供标准化的抽象基类。
+
+主要功能：
+1. 统一接口：定义标准化的数据获取接口
+2. 连接管理：提供连接状态管理和生命周期控制
+3. 数据标准化：提供数据格式标准化的基础方法
+4. 错误处理：提供统一的错误处理和日志记录机制
+5. 扩展支持：支持财务数据等扩展接口
+6. 类型安全：使用类型注解确保代码质量
+7. 异步支持：支持异步数据获取操作
+8. 多市场支持：支持CN/HK/US等多个市场的股票数据
+
+核心接口：
+- connect()：连接到数据源
+- disconnect()：断开连接
+- is_available()：检查数据源可用性
+- get_stock_basic_info()：获取股票基础信息
+- get_stock_quotes()：获取实时行情数据
+- get_historical_data()：获取历史K线数据
+- get_financial_data()：获取财务数据（扩展接口）
+
+数据标准化：
+- standardize_basic_info()：标准化股票基础信息
+- standardize_quotes()：标准化实时行情数据
+- _determine_market_info()：确定市场信息
+- _determine_market()：确定市场代码
+- _format_date_output()：格式化日期输出
+- _convert_to_float()：安全转换为浮点数
+
+设计原则：
+- 抽象基类：使用ABC定义抽象方法
+- 类型注解：完整的类型提示支持
+- 异步支持：核心接口支持异步操作
+- 扩展性：支持子类扩展特定功能
+- 标准化：统一的数据格式和字段命名
+- 错误处理：完善的异常处理机制
+- 日志记录：详细的操作日志记录
+
+配置参数：
+- provider_name：数据源提供商名称
+- connected：连接状态标识
+- logger：日志记录器实例
+
+使用示例：
+    from tradingagents.dataflows.providers.base_provider import BaseStockDataProvider
+    
+    class MyDataProvider(BaseStockDataProvider):
+        async def connect(self) -> bool:
+            # 实现连接逻辑
+            self.connected = True
+            return True
+            
+        async def get_stock_basic_info(self, symbol: str = None):
+            # 实现基础信息获取
+            raw_data = await self._fetch_data(symbol)
+            return self.standardize_basic_info(raw_data)
+            
+        async def get_stock_quotes(self, symbol: str):
+            # 实现行情数据获取
+            raw_data = await self._fetch_quotes(symbol)
+            return self.standardize_quotes(raw_data)
+            
+        async def get_historical_data(self, symbol, start_date, end_date=None):
+            # 实现历史数据获取
+            return await self._fetch_historical(symbol, start_date, end_date)
+
+依赖要求：
+- pandas：数据处理和分析库
+- typing：类型注解支持
+- abc：抽象基类支持
+- datetime：日期时间处理
+- logging：日志记录
+
+数据格式：
+- 基础信息：包含代码、名称、市场、行业等字段
+- 实时行情：包含价格、成交量、涨跌幅等字段
+- 历史数据：pandas DataFrame格式，包含OHLCV数据
+- 财务数据：支持年报和季报格式
+
+错误处理：
+- 连接失败：返回False并记录错误日志
+- 数据获取失败：返回None并记录警告日志
+- 数据解析错误：记录详细错误信息
+- 网络异常：提供重试机制建议
+
+性能优化：
+- 连接池：支持连接复用和池化管理
+- 缓存机制：支持数据缓存减少重复请求
+- 批量处理：支持批量数据获取和处理
+- 异步操作：支持并发数据获取
+
+扩展性：
+- 子类化：支持继承扩展特定功能
+- 插件机制：支持动态加载数据提供商
+- 配置驱动：支持配置文件驱动的参数设置
+- 多数据源：支持同时连接多个数据源
+
+作者：TradingAgents-CN团队
+版本：2.0.0
+创建时间：2024-01-01
 """
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any, List, Union

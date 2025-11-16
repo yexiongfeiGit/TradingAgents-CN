@@ -1,7 +1,67 @@
 #!/usr/bin/env python3
 """
-Tushare配置管理
-专门处理Tushare相关的环境变量配置，兼容Python 3.13+
+Tushare配置管理模块
+
+专门处理Tushare相关的环境变量配置，兼容Python 3.13+，提供详细的配置验证和诊断功能。
+
+主要功能：
+1. Tushare Token配置管理
+2. 数据源启用/禁用控制
+3. 缓存配置管理
+4. 配置验证和诊断
+5. 兼容性测试和问题修复
+6. 环境变量调试信息
+
+配置参数：
+- TUSHARE_TOKEN：Tushare API密钥（必需）
+- TUSHARE_ENABLED：启用状态（可选，默认False）
+- DEFAULT_CHINA_DATA_SOURCE：默认中国数据源（可选，默认akshare）
+- ENABLE_DATA_CACHE：缓存启用状态（可选，默认True）
+- TUSHARE_CACHE_TTL_HOURS：缓存过期时间（可选，默认24小时）
+
+特性：
+- 自动加载dotenv文件
+- 详细的配置验证
+- Token格式检查
+- 兼容性测试
+- 问题诊断和修复建议
+- 调试信息输出
+
+Token验证规则：
+- Token不能为空
+- Token长度必须大于30个字符
+- Tushare Token通常为40字符的十六进制字符串
+
+使用示例：
+    # 获取配置实例
+    config = get_tushare_config()
+    
+    # 检查配置有效性
+    if config.is_valid():
+        print("Tushare配置有效")
+    else:
+        print("Tushare配置无效")
+    
+    # 获取详细验证结果
+    result = config.get_validation_result()
+    print(f"配置问题: {result['issues']}")
+    print(f"修复建议: {result['suggestions']}")
+    
+    # 运行兼容性检查
+    compatibility = check_tushare_compatibility()
+    
+    # 诊断配置问题
+    diagnose_tushare_issues()
+
+环境变量支持：
+- 支持.env文件自动加载
+- 支持标准环境变量
+- 提供详细的调试信息
+- 布尔值解析兼容性测试
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 
 import os

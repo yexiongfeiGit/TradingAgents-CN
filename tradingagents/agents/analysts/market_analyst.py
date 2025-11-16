@@ -1,3 +1,21 @@
+#!/usr/bin/env python3
+"""
+市场分析师智能体模块
+
+该模块实现了市场分析师智能体，负责进行股票技术分析和市场数据解读。
+通过整合多源市场数据，提供技术指标分析、价格趋势判断和投资建议。
+
+主要功能：
+- 自动识别股票类型（A股/港股/美股）并获取相应市场数据
+- 执行技术指标分析（移动平均线、MACD、RSI、布林带等）
+- 生成专业的技术分析报告和投资建议
+- 支持多市场货币单位适配（人民币/港币/美元）
+- 集成统一数据源接口，实现智能数据获取
+
+作者: TradingAgents-CN Team
+版本: 1.0.0
+"""
+
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import time
 import json
@@ -16,14 +34,35 @@ from tradingagents.agents.utils.google_tool_handler import GoogleToolCallHandler
 
 def _get_company_name(ticker: str, market_info: dict) -> str:
     """
-    根据股票代码获取公司名称
+    根据股票代码获取公司名称，支持多市场智能识别
+    
+    该函数根据股票代码格式自动识别市场类型（A股/港股/美股），
+    并调用相应的数据源获取公司中文名称。具备降级处理机制，
+    当主要数据源失败时，会使用备用方案。
 
     Args:
-        ticker: 股票代码
-        market_info: 市场信息字典
+        ticker (str): 股票代码，支持多种格式：
+            - A股：600000, 000001, 300750 等
+            - 港股：0700.HK, 3690.HK 等
+            - 美股：AAPL, TSLA, NVDA 等
+        market_info (dict): 市场信息字典，包含：
+            - is_china (bool): 是否为中国A股
+            - is_hk (bool): 是否为港股
+            - is_us (bool): 是否为美股
+            - market_name (str): 市场名称
+            - currency_name (str): 货币名称
+            - currency_symbol (str): 货币符号
 
     Returns:
-        str: 公司名称
+        str: 公司名称，格式为：
+            - A股：公司中文全称
+            - 港股：公司中文名称（去除.HK后缀）
+            - 美股：常用中文名称或英文名称
+            - 其他：默认格式"股票{ticker}"
+            
+    异常处理：
+        - 当所有数据源都失败时，返回默认格式"股票{ticker}"
+        - 记录详细的错误日志用于调试
     """
     try:
         if market_info['is_china']:
@@ -93,9 +132,46 @@ def _get_company_name(ticker: str, market_info: dict) -> str:
 
 
 def create_market_analyst(llm, toolkit):
+    """
+    创建市场分析师智能体节点
+    
+    该工厂函数创建专门负责技术分析的市场分析师智能体。
+    智能体通过调用统一市场数据工具获取股票数据，
+    并基于技术指标生成专业的分析报告。
+
+    Args:
+        llm: 语言模型实例，用于生成分析报告
+        toolkit: 工具包实例，包含数据获取工具
+        
+    Returns:
+        function: 市场分析师节点函数，接收状态并返回更新后的状态
+        
+    智能体特性：
+        - 自动识别股票类型和市场（A股/港股/美股）
+        - 使用统一数据源接口获取市场数据
+        - 支持防死循环机制（最大3次工具调用）
+        - 生成结构化的技术分析报告
+        - 适配多市场货币单位显示
+    """
 
     def market_analyst_node(state):
         logger.debug(f"📈 [DEBUG] ===== 市场分析师节点开始 =====")
+        
+        """
+        市场分析师节点核心逻辑
+        
+        该节点负责执行技术分析任务，工作流程：
+        1. 检查工具调用次数，防止死循环（最大3次）
+        2. 识别股票类型和市场信息
+        3. 获取公司名称（支持多语言）
+        4. 构建专业分析提示词
+        5. 执行LLM分析并生成报告
+        
+        状态更新：
+        - messages: 添加分析消息和工具调用结果
+        - market_report: 存储最终技术分析报告
+        - market_tool_call_count: 记录工具调用次数
+        """
 
         # 🔧 工具调用计数器 - 防止无限循环
         tool_call_count = state.get("market_tool_call_count", 0)

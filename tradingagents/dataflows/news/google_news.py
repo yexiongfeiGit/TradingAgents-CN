@@ -1,3 +1,86 @@
+#!/usr/bin/env python3
+"""
+Google 新闻数据获取模块
+
+提供Google新闻搜索结果的爬取功能，支持按关键词和日期范围获取新闻数据。
+
+主要功能：
+1. 新闻搜索：基于关键词和日期范围的新闻搜索
+2. 结果解析：解析Google新闻搜索结果页面
+3. 数据提取：提取标题、摘要、链接、日期、来源等信息
+4. 分页支持：支持多页新闻结果的获取
+5. 错误重试：智能的重试机制和错误处理
+6. 反爬虫策略：随机的请求延迟和用户代理伪装
+
+请求参数：
+- query：搜索关键词（如公司名称、股票代码等）
+- start_date：开始日期（YYYY-MM-DD或MM/DD/YYYY格式）
+- end_date：结束日期（YYYY-MM-DD或MM/DD/YYYY格式）
+
+返回数据：
+- 链接：新闻原文链接
+- 标题：新闻标题
+- 摘要：新闻内容摘要
+- 日期：新闻发布日期
+- 来源：新闻来源网站
+
+反爬虫策略：
+- 随机延迟：2-6秒的随机请求间隔
+- 用户代理：模拟真实浏览器的User-Agent
+- 超时设置：连接超时10秒，读取超时30秒
+- 重试机制：指数退避的重试策略
+
+错误处理：
+- 连接超时：最多重试3次后跳过当前页
+- 连接错误：最多重试3次后跳过当前页
+- 解析错误：单个结果解析失败时跳过继续处理
+- 频率限制：检测到429状态码时自动重试
+
+性能优化：
+- 分页处理：逐页获取避免一次性大量请求
+- 智能停止：检测到无结果或没有下一页时停止
+- 异常恢复：部分页面失败时继续获取其他页面
+- 日志记录：详细的请求和错误日志
+
+配置参数：
+- TA_GOOGLE_NEWS_SLEEP_MIN_SECONDS：最小延迟时间（默认2秒）
+- TA_GOOGLE_NEWS_SLEEP_MAX_SECONDS：最大延迟时间（默认6秒）
+
+使用示例：
+    from tradingagents.dataflows.news.google_news import getNewsData
+    
+    # 获取苹果公司的新闻
+    news = getNewsData("Apple Inc", "2024-01-01", "2024-01-31")
+    
+    for article in news:
+        print(f"标题: {article['title']}")
+        print(f"来源: {article['source']}")
+        print(f"日期: {article['date']}")
+        print(f"摘要: {article['snippet']}")
+        print("-" * 50)
+
+依赖要求：
+- requests：HTTP请求库
+- beautifulsoup4：HTML解析库
+- tenacity：重试机制库
+
+限制和注意事项：
+- Google可能有访问频率限制
+- 过多的请求可能导致IP被封
+- 搜索结果可能受Google算法影响
+- 需要稳定的网络连接
+
+数据质量：
+- 结果完整性：取决于Google新闻的收录情况
+- 实时性：可能存在一定的延迟
+- 准确性：自动提取可能存在解析误差
+- 覆盖范围：主要覆盖主流媒体的新闻
+
+作者：TradingAgents-CN团队
+版本：2.0.0
+创建时间：2024-01-01
+"""
+
 import json
 import requests
 from bs4 import BeautifulSoup

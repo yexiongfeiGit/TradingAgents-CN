@@ -1,7 +1,51 @@
 #!/usr/bin/env python3
 """
 数据库配置管理模块
-统一管理MongoDB和Redis的连接配置
+
+统一管理MongoDB和Redis的连接配置，提供灵活的配置方式和详细的错误信息。
+
+主要功能：
+1. MongoDB连接配置管理（连接字符串、数据库名称、认证源）
+2. Redis连接配置管理（连接字符串或分离参数）
+3. 配置验证和诊断
+4. 友好的错误信息和状态报告
+5. 环境变量驱动的配置管理
+
+特性：
+- 灵活配置：支持连接字符串和分离参数两种配置方式
+- 错误处理：详细的错误信息和配置建议
+- 配置验证：自动验证配置的完整性
+- 状态报告：友好的配置状态描述
+- 向后兼容：支持多种Redis连接格式
+
+配置要求：
+MongoDB：
+- MONGODB_CONNECTION_STRING（必需）
+- MONGODB_DATABASE（可选，默认tradingagents）
+- MONGODB_AUTH_SOURCE（可选，默认admin）
+
+Redis：
+- REDIS_CONNECTION_STRING（可选，优先使用）
+- REDIS_HOST + REDIS_PORT（可选，连接字符串不存在时使用）
+- REDIS_PASSWORD（可选）
+- REDIS_DATABASE（可选，默认0）
+
+使用示例：
+    # 获取MongoDB配置
+    mongodb_config = DatabaseConfig.get_mongodb_config()
+    
+    # 获取Redis配置
+    redis_config = DatabaseConfig.get_redis_config()
+    
+    # 验证配置
+    validation_result = DatabaseConfig.validate_config()
+    
+    # 获取状态描述
+    status = DatabaseConfig.get_config_status()
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 
 import os

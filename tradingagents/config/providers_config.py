@@ -1,8 +1,61 @@
 """
-数据源提供器配置管理
+数据源提供器配置管理模块
 
-从 tradingagents/dataflows/providers_config.py 迁移而来
-统一管理所有数据源提供器的配置
+从 tradingagents/dataflows/providers_config.py 迁移而来，统一管理所有数据源提供器的配置。
+
+主要功能：
+1. 多数据源支持（Tushare、AKShare、BaoStock、Yahoo Finance、Finnhub）
+2. 环境变量驱动的配置管理
+3. 数据源启用/禁用控制
+4. 缓存配置和限流设置
+5. 全局配置实例管理
+
+支持的数据源：
+- Tushare：国内股票数据，需要API Token
+- AKShare：开源财经数据接口
+- BaoStock：免费股票数据
+- Yahoo Finance：国际股票数据（默认禁用）
+- Finnhub：专业金融数据，需要API Key（默认禁用）
+
+配置参数：
+- enabled：数据源启用状态
+- token/api_key：API密钥（如需要）
+- timeout：请求超时时间（秒）
+- rate_limit：限流间隔（秒）
+- max_retries：最大重试次数
+- cache_enabled：缓存启用状态
+- cache_ttl：缓存过期时间（秒）
+
+特性：
+- 懒加载：配置在首次访问时加载
+- 单例模式：全局共享配置实例
+- 错误处理：默认值和异常处理
+- 日志记录：详细的配置加载日志
+- 向后兼容：支持旧版本配置格式
+
+使用示例：
+    # 获取全局配置实例
+    config = get_data_source_config()
+    
+    # 获取特定数据源配置
+    tushare_config = config.get_provider_config("tushare")
+    
+    # 检查数据源是否启用
+    if config.is_provider_enabled("tushare"):
+        # 使用Tushare数据源
+        pass
+    
+    # 获取所有启用的数据源
+    enabled_providers = config.get_all_enabled_providers()
+
+环境变量配置：
+- TUSHARE_ENABLED、TUSHARE_TOKEN、TUSHARE_TIMEOUT等
+- AKSHARE_ENABLED、AKSHARE_TIMEOUT、AKSHARE_RATE_LIMIT等
+- BAOSTOCK_ENABLED、BAOSTOCK_TIMEOUT、BAOSTOCK_MAX_RETRIES等
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 import os
 from typing import Dict, Any

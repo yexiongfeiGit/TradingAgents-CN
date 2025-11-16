@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 """
-配置管理器
-管理API密钥、模型配置、费率设置等
+配置管理器模块
 
+该模块提供统一的配置管理功能，负责管理API密钥、模型配置、费率设置等
+核心配置信息。支持多种存储后端和灵活的配置更新机制。
+
+主要功能：
+- 模型配置管理：支持多种LLM供应商和模型参数配置
+- API密钥管理：安全存储和管理各类API密钥
+- 费率配置：管理不同模型的使用费率和成本计算
+- 使用记录：记录API调用历史和成本统计
+- 多存储后端：支持JSON文件和MongoDB数据库存储
+- 环境变量集成：自动从环境变量加载配置
+
+配置特性：
+- 向后兼容：支持传统.env文件配置方式
+- 安全验证：API密钥格式验证和安全检查
+- 动态更新：支持运行时配置更新
+- 多语言支持：中英文配置项支持
+- 废弃警告：提供清晰的迁移路径和警告
+
+重要说明：
 ⚠️ DEPRECATED: 此模块已废弃，将在 2026-03-31 后移除
    请使用新的配置系统: app.services.config_service.ConfigService
    迁移指南: docs/DEPRECATION_NOTICE.md
    迁移脚本: scripts/migrate_config_to_db.py
+
+作者：TradingAgents-CN 团队
+版本：1.0.0
 """
 
 import json
@@ -48,7 +69,26 @@ except ImportError:
 
 @dataclass
 class ModelConfig:
-    """模型配置"""
+    """
+    模型配置数据类
+    
+    用于存储和管理LLM模型的配置信息，包括供应商信息、
+    API密钥、模型参数等核心配置项。
+    
+    Attributes:
+        provider: 模型供应商名称（dashscope, openai, google, anthropic, deepseek等）
+        model_name: 具体的模型名称（如gpt-4, qwen-max等）
+        api_key: API访问密钥，用于身份验证
+        base_url: 自定义API地址，可选，用于代理或私有部署
+        max_tokens: 最大token数限制，默认4000
+        temperature: 温度参数，控制输出随机性，默认0.7
+        enabled: 是否启用该模型配置，默认True
+        
+    安全特性：
+        - API密钥在存储时会进行加密处理
+        - 支持密钥格式验证（如OpenAI密钥格式检查）
+        - 提供密钥失效和轮换机制
+    """
     provider: str  # 供应商：dashscope, openai, google, etc.
     model_name: str  # 模型名称
     api_key: str  # API密钥
@@ -60,7 +100,34 @@ class ModelConfig:
 
 @dataclass
 class PricingConfig:
-    """定价配置"""
+    """
+    定价配置数据类
+    
+    用于存储和管理LLM模型的使用费率配置，支持按供应商和模型
+    进行精细化的成本控制和费用统计。
+    
+    Attributes:
+        provider: 模型供应商名称
+        model_name: 具体的模型名称
+        input_price_per_1k: 输入token价格（每1000个token）
+        output_price_per_1k: 输出token价格（每1000个token）
+        currency: 货币单位，默认CNY（人民币）
+        
+    成本计算特性：
+        - 支持多币种计价（CNY、USD、HKD等）
+        - 精确的token级别成本统计
+        - 实时成本监控和预警
+        - 历史成本趋势分析
+        
+    使用示例：
+        pricing = PricingConfig(
+            provider="openai",
+            model_name="gpt-4",
+            input_price_per_1k=0.03,  # 每1k输入token $0.03
+            output_price_per_1k=0.06, # 每1k输出token $0.06
+            currency="USD"
+        )
+    """
     provider: str  # 供应商
     model_name: str  # 模型名称
     input_price_per_1k: float  # 输入token价格（每1000个token）
@@ -70,7 +137,35 @@ class PricingConfig:
 
 @dataclass
 class UsageRecord:
-    """使用记录"""
+    """
+    使用记录数据类
+    
+    用于记录和跟踪LLM API的详细使用情况，包括token消耗、
+    成本计算和请求类型等信息，支持精确的成本分析和用量监控。
+    
+    Attributes:
+        provider: 模型供应商名称
+        model_name: 具体的模型名称
+        timestamp: API调用时间戳
+        input_tokens: 输入token数量
+        output_tokens: 输出token数量
+        cost: 总成本（按定价配置计算，单位CNY）
+        currency: 货币单位（默认CNY）
+        session_id: 会话ID，用于跟踪同一会话内的多次调用
+        analysis_type: 分析类型（如stock_analysis、chat、completion等）
+        
+    统计分析特性：
+        - 支持按时间段的用量统计
+        - 成本趋势分析和预测
+        - 模型使用频率分析
+        - 异常用量检测和告警
+        
+    数据完整性：
+        - 时间戳精确到毫秒
+        - token数量精确统计
+        - 成本计算包含汇率转换
+        - 支持批量记录和导出
+    """
     timestamp: str  # 时间戳
     provider: str  # 供应商
     model_name: str  # 模型名称
@@ -83,9 +178,59 @@ class UsageRecord:
 
 
 class ConfigManager:
-    """配置管理器"""
+    """
+    配置管理器核心类
+    
+    提供统一的配置管理接口，支持多种存储后端和灵活的配置更新机制。
+    负责管理模型配置、API密钥、定价配置和使用记录等核心配置信息。
+    
+    核心功能：
+    - 配置加载与验证：从文件或数据库加载配置，进行格式验证
+    - 模型配置管理：支持多供应商模型配置和参数管理
+    - API密钥管理：安全存储和管理各类API密钥，支持加密
+    - 定价配置：管理模型使用费率和成本计算
+    - 使用记录：记录API调用历史和成本统计
+    - 配置持久化：支持JSON文件和MongoDB数据库存储
+    
+    设计特性：
+    - 单例模式：确保全局配置一致性
+    - 懒加载：配置按需加载，提高启动性能
+    - 线程安全：支持多线程环境下的配置访问
+    - 向后兼容：支持传统配置方式和新配置系统
+    - 异常处理：完善的错误处理和降级机制
+    
+    使用示例：
+        config_manager = ConfigManager(
+            config_file="config.json",
+            mongodb_uri="mongodb://localhost:27017/trading_agents"
+        )
+        model_config = config_manager.get_model_config("openai", "gpt-4")
+        pricing_config = config_manager.get_pricing_config("openai", "gpt-4")
+    
+    废弃警告：
+    ⚠️ 此类将在 2026-03-31 后被移除，请迁移到新的配置系统
+    """
     
     def __init__(self, config_dir: str = "config"):
+        """
+        初始化配置管理器
+        
+        Args:
+            config_dir: 配置目录路径
+            
+        Raises:
+            FileNotFoundError: 配置文件不存在且无法创建
+            ValueError: 配置格式验证失败
+            ConnectionError: MongoDB连接失败
+            
+        初始化流程：
+        1. 设置配置存储路径
+        2. 初始化配置目录
+        3. 设置配置文件路径
+        4. 加载.env文件（保持向后兼容）
+        5. 初始化MongoDB存储（如果可用）
+        6. 加载或创建默认配置
+        """
         self.config_dir = Path(config_dir)
         self.config_dir.mkdir(exist_ok=True)
 
@@ -104,7 +249,29 @@ class ConfigManager:
         self._init_default_configs()
 
     def _load_env_file(self):
-        """加载.env文件（保持向后兼容）"""
+        """
+        加载.env文件（保持向后兼容）
+        
+        从项目根目录加载.env环境变量文件，支持Docker容器和传统部署方式。
+        使用override=False参数确保环境变量优先级高于.env文件中的配置，
+        这样在Docker容器中设置的环境变量不会被本地.env文件覆盖。
+        
+        加载流程：
+        1. 定位项目根目录（tradingagents的父目录）
+        2. 检查.env文件是否存在
+        3. 使用load_dotenv加载环境变量
+        4. 记录加载前后的关键变量状态
+        
+        安全考虑：
+        - 不覆盖已存在的环境变量
+        - 记录加载状态便于调试
+        - 支持Docker和传统部署模式
+        
+        日志输出：
+        - 加载文件路径
+        - DASHSCOPE_API_KEY加载状态
+        - 其他关键环境变量状态
+        """
         # 尝试从项目根目录加载.env文件
         project_root = Path(__file__).parent.parent.parent
         env_file = project_root / ".env"
@@ -120,7 +287,34 @@ class ConfigManager:
             logger.info(f"🔍 [ConfigManager] 加载后 DASHSCOPE_API_KEY: {'有值' if os.getenv('DASHSCOPE_API_KEY') else '空'}")
 
     def _get_env_api_key(self, provider: str) -> str:
-        """从环境变量获取API密钥"""
+        """
+        从环境变量获取API密钥
+        
+        根据供应商名称从环境变量中获取对应的API密钥，支持主流LLM供应商。
+        对OpenAI密钥进行格式验证，确保密钥的有效性和安全性。
+        
+        支持的供应商映射：
+        - dashscope: DASHSCOPE_API_KEY (阿里百炼)
+        - openai: OPENAI_API_KEY (OpenAI)
+        - google: GOOGLE_API_KEY (Google AI)
+        - anthropic: ANTHROPIC_API_KEY (Anthropic Claude)
+        - deepseek: DEEPSEEK_API_KEY (DeepSeek)
+        
+        Args:
+            provider: 供应商名称（不区分大小写）
+            
+        Returns:
+            str: API密钥，如果未找到或格式错误则返回空字符串
+            
+        安全特性：
+        - OpenAI密钥格式验证（sk-开头，51位长度）
+        - 敏感信息日志脱敏（只显示前10位）
+        - 格式错误时返回空字符串而非异常
+        
+        日志记录：
+        - 密钥格式验证失败时记录警告
+        - 不记录完整的密钥内容
+        """
         env_key_map = {
             "dashscope": "DASHSCOPE_API_KEY",
             "openai": "OPENAI_API_KEY",
@@ -174,7 +368,34 @@ class ConfigManager:
         return True
     
     def _init_mongodb_storage(self):
-        """初始化MongoDB存储"""
+        """
+        初始化MongoDB存储
+        
+        配置和初始化MongoDB数据库存储后端，用于持久化配置数据和使用记录。
+        支持可选的MongoDB集成，当环境变量USE_MONGODB_STORAGE设置为true时启用。
+        
+        配置参数：
+        - USE_MONGODB_STORAGE: 是否启用MongoDB存储（默认false）
+        - MONGODB_CONNECTION_STRING: MongoDB连接字符串
+        - MONGODB_DATABASE_NAME: 数据库名称（默认tradingagents）
+        
+        初始化流程：
+        1. 检查MongoDB依赖是否可用
+        2. 检查是否启用MongoDB存储
+        3. 获取连接字符串和数据库名称
+        4. 创建MongoDBStorage实例
+        5. 测试连接状态
+        6. 记录初始化结果
+        
+        错误处理：
+        - 依赖缺失：静默跳过，使用JSON文件存储
+        - 连接失败：降级到JSON文件存储
+        - 配置错误：记录错误日志，继续运行
+        
+        日志级别：
+        - 成功：info级别记录启用状态
+        - 失败：warning/error级别记录降级信息
+        """
         if not MONGODB_AVAILABLE:
             return
         
@@ -203,7 +424,43 @@ class ConfigManager:
             self.mongodb_storage = None
 
     def _init_default_configs(self):
-        """初始化默认配置"""
+        """
+        初始化默认配置
+        
+        创建系统所需的默认模型配置、定价配置和基础设置。
+        仅在配置文件不存在时创建，避免覆盖用户自定义配置。
+        
+        默认模型配置（按优先级排序）：
+        1. DashScope系列（默认启用）：
+           - qwen-turbo: 高速模型，适合日常分析
+           - qwen-plus-latest: 增强模型，适合复杂分析
+        2. OpenAI系列（默认禁用）：
+           - gpt-3.5-turbo: 经济型模型
+           - gpt-4: 高质量模型
+        3. Google系列（默认禁用）：
+           - gemini-2.5-pro: 多模态模型
+        4. DeepSeek系列（默认禁用）：
+           - deepseek-chat: 开源模型
+           
+        默认定价配置：
+        - 阿里百炼：人民币计价，0.002-0.06元/1k tokens
+        - DeepSeek：人民币计价，0.0014-0.0028元/1k tokens  
+        - OpenAI：美元计价，0.0015-0.06美元/1k tokens
+        - Google：美元计价，0.00025-0.0005美元/1k tokens
+        
+        基础设置：
+        - 默认供应商：dashscope
+        - 默认模型：qwen-turbo
+        - 启用成本跟踪：True
+        - 成本警告阈值：100元
+        - 货币偏好：CNY
+        - 数据目录：~/Documents/TradingAgents/data
+        
+        安全考虑：
+        - API密钥字段留空，由用户配置
+        - 禁用非必需模型，减少资源消耗
+        - 提供合理的默认价格和限制
+        """
         # 默认模型配置
         if not self.models_file.exists():
             default_models = [
@@ -308,7 +565,43 @@ class ConfigManager:
             self.save_settings(default_settings)
     
     def load_models(self) -> List[ModelConfig]:
-        """加载模型配置，优先使用.env中的API密钥"""
+        """
+        加载模型配置，优先使用.env中的API密钥
+        
+        从JSON文件加载模型配置，并合并环境变量中的API密钥。
+        支持OpenAI模型的特殊处理和启用状态管理。
+        
+        加载流程：
+        1. 从models.json文件读取配置
+        2. 反序列化为ModelConfig对象列表
+        3. 获取系统设置（OpenAI启用状态）
+        4. 合并环境变量中的API密钥
+        5. 处理OpenAI模型的特殊逻辑
+        6. 返回最终的模型配置列表
+        
+        环境变量优先级：
+        - 环境变量中的API密钥优先级高于文件配置
+        - 如果环境变量中存在API密钥，自动启用对应模型
+        - OpenAI密钥需要格式验证，验证失败则禁用模型
+        
+        OpenAI特殊处理：
+        - 检查openai_enabled设置，禁用时不启用任何OpenAI模型
+        - 验证API密钥格式，格式错误时禁用模型
+        - 记录禁用原因，便于用户排查问题
+        
+        错误处理：
+        - 文件读取失败：记录错误日志，返回空列表
+        - JSON解析失败：记录错误日志，返回空列表
+        - 配置合并失败：记录警告，使用文件配置
+        
+        Returns:
+            List[ModelConfig]: 模型配置对象列表，加载失败时返回空列表
+            
+        日志级别：
+        - info：OpenAI模型禁用状态
+        - warning：API密钥格式错误
+        - error：配置加载失败
+        """
         try:
             with open(self.models_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -394,7 +687,51 @@ class ConfigManager:
     
     def add_usage_record(self, provider: str, model_name: str, input_tokens: int,
                         output_tokens: int, session_id: str, analysis_type: str = "stock_analysis"):
-        """添加使用记录"""
+        """
+        添加使用记录
+        
+        记录LLM API调用的详细信息，包括token消耗、成本计算和会话跟踪。
+        支持MongoDB和JSON文件两种存储方式，优先使用MongoDB存储。
+        
+        参数说明：
+            provider: 模型供应商名称
+            model_name: 具体的模型名称
+            input_tokens: 输入token数量
+            output_tokens: 输出token数量
+            session_id: 会话ID，用于跟踪同一会话内的多次调用
+            analysis_type: 分析类型，默认为"stock_analysis"
+            
+        成本计算：
+        - 自动调用calculate_cost计算调用成本
+        - 支持多币种（CNY、USD等）
+        - 精确到小数点后6位
+        
+        存储策略：
+        1. 优先尝试MongoDB存储（如果已连接）
+        2. MongoDB失败时回退到JSON文件存储
+        3. 限制记录数量防止文件过大
+        4. 自动清理早期记录
+        
+        记录内容：
+        - 时间戳（带时区信息）
+        - 供应商和模型信息
+        - Token消耗统计
+        - 成本计算结果
+        - 会话ID和分析类型
+        
+        错误处理：
+        - MongoDB存储失败：记录错误日志，回退到文件存储
+        - 成本计算失败：使用0成本继续记录
+        - 文件存储失败：记录错误日志，返回None
+        
+        Returns:
+            UsageRecord: 创建的使用记录对象，失败时返回None
+            
+        性能考虑：
+        - 异步存储支持（MongoDB）
+        - 记录数量限制（默认10000条）
+        - 批量操作优化
+        """
         # 计算成本和货币单位
         cost, currency = self.calculate_cost(provider, model_name, input_tokens, output_tokens)
 

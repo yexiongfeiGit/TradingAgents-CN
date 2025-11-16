@@ -1,6 +1,90 @@
+#!/usr/bin/env python3
 """
-统一的Tushare数据提供器
-合并app层和tradingagents层的所有优势功能
+Tushare 中国股票数据提供商模块
+
+提供Tushare数据源的统一封装接口，支持A股、港股、美股等市场数据的获取和分析。
+
+主要功能：
+1. A股股票数据：日线、周线、月线等历史价格数据
+2. A股基本面数据：财务指标、估值指标、盈利能力等
+3. 股票基本信息：代码、名称、行业、地域等元数据
+4. 市场参考数据：交易日历、股票列表、行业分类等
+5. 多市场支持：沪深A股、科创板、创业板等
+6. 数据质量保证：数据完整性检查和异常处理
+
+类和方法：
+- TushareProvider：主要的Tushare数据提供器类
+  - connect_sync()：同步连接到Tushare API
+  - connect()：异步连接到Tushare API
+  - get_stock_data()：获取股票历史价格数据
+  - get_fundamentals()：获取股票基本面数据
+  - get_stock_info()：获取股票基本信息
+  - get_stock_list()：获取股票列表
+  - get_trade_calendar()：获取交易日历
+
+Token管理：
+- 优先级：数据库配置 > 环境变量配置
+- 数据库Token：从system_configs集合读取最新配置
+- 环境变量：从TUSHARE_TOKEN环境变量读取
+- Token验证：连接时进行API调用测试
+- 降级机制：数据库失败时降级到环境变量
+
+配置参数：
+- TUSHARE_TOKEN：API访问令牌（必需）
+- TUSHARE_TIMEOUT：API超时时间（可选，默认30秒）
+- TUSHARE_RETRY_COUNT：重试次数（可选，默认3次）
+
+数据格式：
+- 股票数据：pandas DataFrame，包含OHLCV数据
+- 基本面数据：标准化的财务指标DataFrame
+- 股票信息：包含元信息的字典或DataFrame
+- 时间格式：YYYYMMDD字符串格式
+
+错误处理：
+- Token无效：提供详细的错误信息和解决建议
+- API限流：自动重试和指数退避
+- 网络错误：连接超时和重试机制
+- 数据异常：数据完整性检查和清理
+
+性能优化：
+- 连接池复用：避免频繁创建连接
+- 批量查询：支持批量股票数据获取
+- 缓存机制：可选的本地缓存支持
+- 异步支持：提供异步API接口
+
+使用示例：
+    from tradingagents.dataflows.providers.china.tushare import TushareProvider
+    
+    provider = TushareProvider()
+    
+    # 连接Tushare
+    if provider.connect_sync():
+        # 获取股票数据
+        data = provider.get_stock_data("000001.SZ", "2024-01-01", "2024-12-31")
+        
+        # 获取基本面数据
+        fundamentals = provider.get_fundamentals("000001.SZ")
+
+向后兼容性：
+- 支持旧版本API调用方式
+- 保持数据格式一致性
+- 提供迁移指导和兼容性警告
+
+依赖要求：
+- tushare：Tushare Python SDK
+- pandas：数据处理和分析
+- numpy：数值计算支持
+- aiohttp：异步HTTP支持（可选）
+
+数据覆盖范围：
+- 股票代码：全部A股、B股、科创板、创业板
+- 时间范围：1990年至今的历史数据
+- 数据频率：日线、周线、月线、分钟线
+- 市场覆盖：上海证券交易所、深圳证券交易所
+
+作者：TradingAgents-CN团队
+版本：2.0.0
+创建时间：2024-01-01
 """
 from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date, timedelta

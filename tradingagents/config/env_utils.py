@@ -1,7 +1,36 @@
 #!/usr/bin/env python3
 """
-环境变量解析工具
-提供兼容Python 3.13+的强健环境变量解析功能
+环境变量解析工具模块
+
+提供兼容Python 3.13+的强健环境变量解析功能，支持多种数据类型的环境变量解析和验证。
+
+主要功能：
+1. 多类型环境变量解析（布尔型、整型、浮点型、字符串、列表）
+2. 灵活的值格式支持（true/false、yes/no、on/off等多种布尔值格式）
+3. 环境变量验证和诊断
+4. 错误处理和默认值机制
+5. 类型转换和安全检查
+
+特性：
+- 向后兼容：支持Python 3.8+版本
+- 类型安全：提供类型注解和运行时类型检查
+- 错误处理：详细的错误信息和默认值回退
+- 格式灵活：支持多种常见的环境变量值格式
+- 性能优化：高效的字符串处理和类型转换
+
+使用示例：
+    # 布尔值解析
+    debug_mode = parse_bool_env("DEBUG_MODE", False)
+    
+    # 列表解析
+    allowed_hosts = parse_list_env("ALLOWED_HOSTS", default=["localhost"])
+    
+    # 环境变量验证
+    result = validate_required_env_vars(["API_KEY", "DATABASE_URL"])
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 
 import os

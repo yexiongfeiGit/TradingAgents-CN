@@ -1,7 +1,69 @@
 #!/usr/bin/env python3
 """
-MongoDB存储适配器
-用于将token使用记录存储到MongoDB数据库
+MongoDB存储适配器模块
+
+用于将token使用记录存储到MongoDB数据库，提供高性能的数据持久化和查询功能。
+
+主要功能：
+1. 使用记录存储和管理
+2. 数据库连接和连接池管理
+3. 索引创建和查询优化
+4. 使用统计和数据分析
+5. 错误处理和降级机制
+6. 时区感知的时间戳处理
+
+配置参数：
+- MONGODB_CONNECTION_STRING：MongoDB连接字符串（必需）
+- MONGODB_DATABASE：数据库名称（可选，默认tradingagents）
+- MONGO_CONNECT_TIMEOUT_MS：连接超时（可选，默认30000ms）
+- MONGO_SOCKET_TIMEOUT_MS：套接字超时（可选，默认60000ms）
+- MONGO_SERVER_SELECTION_TIMEOUT_MS：服务器选择超时（可选，默认5000ms）
+
+特性：
+- 自动索引创建：优化查询性能
+- 时区支持：使用系统时区设置
+- 批量操作：支持批量插入和查询
+- 错误处理：详细的错误日志和降级处理
+- 连接池：高效的连接复用
+- 数据验证：记录格式验证和转换
+
+索引设计：
+- 复合索引：(timestamp, provider, model_name) - 优化时间序列查询
+- 会话索引：session_id - 支持会话级别的查询
+- 分析类型索引：analysis_type - 支持按分析类型过滤
+
+使用示例：
+    # 创建存储实例
+    storage = MongoDBStorage("mongodb://localhost:27017/", "tradingagents")
+    
+    # 保存使用记录
+    if storage.is_connected():
+        success = storage.save_usage_record(record)
+        if success:
+            print("记录保存成功")
+    
+    # 加载使用记录
+    records = storage.load_usage_records(limit=1000, days=30)
+    
+    # 获取使用统计
+    stats = storage.get_usage_statistics(days=30)
+    print(f"总成本: {stats.get('total_cost', 0)}")
+
+错误处理：
+- 连接失败：记录错误日志，返回False
+- 插入失败：记录错误详情，返回False
+- 查询失败：返回空列表或默认统计
+- 索引创建失败：记录警告，继续运行
+
+性能优化：
+- 连接复用：避免频繁创建连接
+- 索引优化：针对常见查询场景
+- 批量操作：减少网络往返
+- 超时配置：防止长时间阻塞
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 
 import os

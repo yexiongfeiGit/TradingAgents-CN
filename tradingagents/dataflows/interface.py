@@ -1,3 +1,73 @@
+#!/usr/bin/env python3
+"""
+TradingAgents 数据流统一接口模块
+
+提供标准化的数据获取接口，支持多数据源、错误处理、缓存机制和性能优化。
+
+主要功能：
+1. 统一数据接口：封装不同数据源的获取逻辑
+2. 数据源管理：支持美股、港股、A股的多数据源配置
+3. 错误处理：完善的异常捕获和降级机制
+4. 性能优化：缓存、并发、连接池等优化策略
+5. 向后兼容：支持新旧路径的平滑迁移
+6. 配置驱动：基于数据库的动态数据源配置
+
+接口分类：
+- 新闻和情感分析：get_finnhub_news、get_google_news等
+- 财务报表：get_simfin_balance_sheet、get_simfin_income_statements等
+- 技术指标：get_stock_stats_indicators_window、get_stockstats_indicator等
+- 市场数据：get_YFin_data、get_data_in_range等
+- 中国股票数据：get_china_stock_data_unified、get_china_stock_info_unified等
+- 香港股票数据：get_hk_stock_data_unified、get_hk_stock_info_unified等
+
+数据源优先级：
+- 美股：Yahoo Finance > Finnhub（可配置）
+- 港股：AKShare > Yahoo Finance（可配置）
+- A股：Tushare > AKShare（可配置）
+
+配置管理：
+- 数据库配置：system_configs集合存储数据源配置
+- 优先级配置：按市场和数据源类型配置优先级
+- 启用状态：动态启用/禁用特定数据源
+- 错误降级：数据源失败时自动切换备选方案
+
+错误处理策略：
+- 导入失败：记录警告，设置占位函数
+- 数据源不可用：返回None或空DataFrame
+- 网络错误：重试机制和降级处理
+- 配置错误：使用默认配置继续运行
+
+性能特性：
+- 懒加载：按需导入减少内存占用
+- 缓存机制：避免重复数据获取
+- 并发处理：支持多线程数据获取
+- 连接池：复用数据库和网络连接
+
+使用示例：
+    from tradingagents.dataflows import (
+        get_YFin_data, get_finnhub_news, 
+        get_china_stock_data_unified, get_stockstats_indicator
+    )
+    
+    # 获取股票数据（自动处理数据源选择和错误）
+    data = get_YFin_data("AAPL", "2024-01-01", "2024-12-31")
+    
+    # 获取新闻数据
+    news = get_finnhub_news("AAPL", limit=10)
+    
+    # 获取技术指标
+    indicators = get_stockstats_indicator("AAPL", "rsi_14")
+
+向后兼容性：
+- 支持从旧路径导入（finnhub_utils、yfin_utils等）
+- 保持API签名一致性
+- 提供迁移指导和兼容性警告
+
+作者：TradingAgents-CN团队
+版本：2.0.0
+创建时间：2024-01-01
+"""
+
 from typing import Annotated, Dict
 import time
 import os

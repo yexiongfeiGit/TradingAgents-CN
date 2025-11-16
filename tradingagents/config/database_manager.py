@@ -1,8 +1,71 @@
 #!/usr/bin/env python3
 """
-智能数据库管理器
-自动检测MongoDB和Redis可用性，提供降级方案
-使用项目现有的.env配置
+智能数据库管理器模块
+
+自动检测MongoDB和Redis可用性，提供降级方案，使用项目现有的.env配置。
+
+主要功能：
+1. 数据库可用性自动检测（MongoDB、Redis）
+2. 智能连接管理（认证、超时、重试）
+3. 降级方案（文件存储后备）
+4. 配置加载和验证
+5. 连接状态监控和日志记录
+
+支持的数据库：
+- MongoDB：文档数据库，支持复杂查询和索引
+- Redis：内存数据库，支持高速缓存和消息队列
+- 文件存储：JSON文件后备存储方案
+
+配置参数：
+MongoDB：
+- MONGODB_ENABLED：启用状态（可选，默认False）
+- MONGODB_HOST：主机地址（可选，默认localhost）
+- MONGODB_PORT：端口号（可选，默认27017）
+- MONGODB_USERNAME：用户名（可选）
+- MONGODB_PASSWORD：密码（可选）
+- MONGODB_DATABASE：数据库名称（可选，默认tradingagents）
+- MONGODB_AUTH_SOURCE：认证数据库（可选，默认admin）
+- MONGO_CONNECT_TIMEOUT_MS：连接超时（可选，默认30000ms）
+- MONGO_SOCKET_TIMEOUT_MS：套接字超时（可选，默认60000ms）
+- MONGO_SERVER_SELECTION_TIMEOUT_MS：服务器选择超时（可选，默认5000ms）
+
+Redis：
+- REDIS_ENABLED：启用状态（可选，默认False）
+- REDIS_HOST：主机地址（可选，默认localhost）
+- REDIS_PORT：端口号（可选，默认6379）
+- REDIS_PASSWORD：密码（可选）
+- REDIS_DB：数据库编号（可选，默认0）
+
+特性：
+- 自动检测：启动时自动检测数据库可用性
+- 智能降级：数据库不可用时自动切换到文件存储
+- 连接管理：支持认证、超时和重试机制
+- 状态监控：实时监控连接状态和性能
+- 日志记录：详细的连接日志和错误信息
+
+使用示例：
+    # 创建数据库管理器
+    db_manager = DatabaseManager()
+    
+    # 检查数据库可用性
+    if db_manager.mongodb_available:
+        print("MongoDB可用")
+    
+    if db_manager.redis_available:
+        print("Redis可用")
+    
+    # 获取主要后端
+    primary_backend = db_manager.primary_backend
+    print(f"主要缓存后端: {primary_backend}")
+
+降级策略：
+1. 优先使用Redis（如果可用）
+2. 其次使用MongoDB（如果可用）
+3. 最后回退到文件存储
+
+作者：TradingAgents-CN团队
+版本：1.0.0
+创建时间：2024-01-01
 """
 
 import logging
